@@ -17,4 +17,7 @@
 @property (weak, nonatomic) IBOutlet UITableView *tableView;
 
 @property(nonatomic,assign)NSInteger tag;
+
+@property(nonatomic,strong)NSArray * topics;
+
 @end

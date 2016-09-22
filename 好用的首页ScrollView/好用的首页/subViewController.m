@@ -7,7 +7,8 @@
 //
 
 #import "subViewController.h"
-
+#import "ZSTableViewCell.h"
+#import "ZSTopic.h"
 @interface subViewController ()<UITableViewDelegate,UITableViewDataSource>
 
 
@@ -38,18 +39,23 @@
 
 -(NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section{
 
-    return self.strings.count;
+    return self.topics.count;
 }
 
 -(UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath{
-
-    UITableViewCell * cell = [[UITableViewCell alloc]init];
     
-    NSString * str = self.strings[indexPath.row];
+    ZSTableViewCell * cell = [ZSTableViewCell cellWithTableView:tableView];
     
-    cell.textLabel.text = str;
+    ZSTopic * topic = self.topics[indexPath.row];
+    
+    cell.topic = topic;
     
     return cell;
+}
+
+-(CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath{
+
+    return 250;
 }
 
 -(void)scrollViewDidScroll:(UIScrollView *)scrollView{

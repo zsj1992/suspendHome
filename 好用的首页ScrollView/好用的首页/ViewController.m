@@ -119,6 +119,8 @@
     [self setupSegment];
     
     [self setupSubVcs];
+    
+    [self setupBannerView];
 
 }
 
@@ -191,12 +193,29 @@ CGFloat OrignalOffset;
     [self.view bringSubviewToFront:_CusNavigationBar];
 }
 
+-(void)setupBannerView{
+
+    NSMutableArray * images = [NSMutableArray array];
+    
+    for (ZSBanner * banner in self.banners) {
+        
+        [images addObject:banner.photo];
+        
+    }
+    
+    SDCycleScrollView * bannerView = [SDCycleScrollView cycleScrollViewWithFrame:CGRectMake(0, 0, SCREEN_WIDTH, 200) imageNamesGroup:images];
+    
+    [self.headView addSubview:bannerView];
+    
+}
+
 -(void)setupSegment{
     
     for (int i = 0; i<self.categorys.count; ++i) {
         
         
         ZSCategory * zscategory = self.categorys[i];
+        
         NSString * category = zscategory.title;
         
         NSDictionary * attrs = @{NSFontAttributeName:[UIFont systemFontOfSize:18]};
@@ -283,7 +302,7 @@ CGFloat OrignalOffset;
 
     [super viewDidAppear:animated];
     
-
+    self.contentScrollView.contentSize = CGSizeMake(self.categorys.count*SCREEN_WIDTH, 0);
     [self.segmentView bringSubviewToFront:self.indicator];
     
 }
@@ -366,6 +385,8 @@ CGFloat OrignalOffset;
         subVc.category = zscategory.title;
         
         subVc.tag = 1000+idx;
+        
+        subVc.topics = self.topics;
         
         [self addChildViewController:subVc];
         
