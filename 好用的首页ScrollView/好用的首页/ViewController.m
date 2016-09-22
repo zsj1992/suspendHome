@@ -8,6 +8,11 @@
 
 #import "ViewController.h"
 #import "subViewController.h"
+#import "Tool.h"
+#import "ZSBanner.h"
+#import <MJExtension.h>
+#import "ZSCategory.h"
+#import "ZSTopic.h"
 @interface ViewController ()<UITableViewDelegate,UITableViewDataSource,UICollectionViewDelegate,UICollectionViewDataSource>
 
 @property (nonatomic,strong)UITableView * tableView;
@@ -20,8 +25,6 @@
 
 @property (nonatomic,strong)UIScrollView * contentScrollView;
 
-@property (nonatomic,strong)NSArray * categorys;
-
 @property(nonatomic,strong)NSMutableArray * subVcs;
 
 @property (nonatomic,strong)NSMutableArray * segmentBtns;
@@ -29,6 +32,12 @@
 @property (nonatomic,strong)UIButton * segmentBtnSel;
 
 @property (nonatomic,strong)UIView * indicator;
+
+@property (nonatomic,strong)NSMutableArray * categorys;
+
+@property (nonatomic,strong)NSMutableArray * banners;
+
+@property (nonatomic,strong)NSMutableArray * topics;
 
 @end
 
@@ -41,6 +50,8 @@
     }
     return _segmentBtns;
 }
+
+
 
 -(NSMutableArray *)subVcs{
 
@@ -58,23 +69,61 @@
     
     self.automaticallyAdjustsScrollViewInsets = NO;
     
-    self.categorys = @[@"1",@"2",@"在模拟器上面跑没有问题",@"4",@"5",@"6",@"7",@"8",@"9",@"10"];
-    
     [self setupUI];
-    
-    [self setupSegment];
-    
-    [self setupSubVcs];
 
-   
-    
-    
+    [self loadData];
+
     OrignalOffset = -(HeadViewHeight+SegmentViewHeight);
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(subTableViewDidScroll:) name:@"subTableViewDidScroll" object:nil];
     
 
 }
+
+
+
+
+-(void)loadData{
+    
+   NSDictionary * dataDic = [Tool getData];
+   
+    NSArray * dicBanners = dataDic[@"data"][@"banner"];
+    NSArray * dicCategories = dataDic[@"data"][@"category_element"];
+    NSArray * dicTopics = dataDic[@"data"][@"topic"];
+    
+    
+    NSMutableArray * arrTempBanners = [NSMutableArray array];
+    for (NSDictionary * dic in dicBanners) {
+        ZSBanner * banner = [ZSBanner mj_objectWithKeyValues:dic];
+        [arrTempBanners addObject:banner];
+    }
+    self.banners = arrTempBanners;
+    
+    
+    NSMutableArray * arrTempCategories = [NSMutableArray array];
+    for (NSDictionary * dic in dicCategories) {
+        ZSCategory * category = [ZSCategory mj_objectWithKeyValues:dic];
+        [arrTempCategories addObject:category];
+    }
+    self.categorys = arrTempCategories;
+
+    NSMutableArray * arrTempTopics = [NSMutableArray array];
+    for (NSDictionary * dic in dicTopics) {
+        ZSTopic * topic = [ZSTopic mj_objectWithKeyValues:dic];
+        [arrTempTopics addObject:topic];
+    }
+    self.topics = arrTempTopics;
+
+
+    
+    [self setupSegment];
+    
+    [self setupSubVcs];
+
+}
+
+
+
 
 CGFloat NavigationHeight = 64;
 CGFloat HeadViewHeight=200;
@@ -146,15 +195,14 @@ CGFloat OrignalOffset;
     
     for (int i = 0; i<self.categorys.count; ++i) {
         
-        NSString * category = self.categorys[i];
+        
+        ZSCategory * zscategory = self.categorys[i];
+        NSString * category = zscategory.title;
         
         NSDictionary * attrs = @{NSFontAttributeName:[UIFont systemFontOfSize:18]};
         
         CGSize size = [category boundingRectWithSize:CGSizeMake(MAXFLOAT, 20) options:NSStringDrawingUsesLineFragmentOrigin attributes:attrs context:nil].size;
-        
-        
-        
-        
+
         UIButton * btn = [[UIButton alloc]init];
         
         [self.segmentView addSubview:btn];
@@ -213,7 +261,8 @@ CGFloat OrignalOffset;
     }
     
     else if(CGRectGetMidX(self.segmentBtnSel.frame)>self.segmentView.contentSize.width+40-SCREEN_WIDTH/2){//最后几个
-    
+        [self.segmentView setContentOffset:CGPointMake(self.segmentView.contentSize.width-SCREEN_WIDTH, 0) animated:YES];
+        
     }else{
         [self.segmentView setContentOffset:CGPointMake(CGRectGetMidX(self.segmentBtnSel.frame)-SCREEN_WIDTH/2, 0) animated:YES];
     }
@@ -304,16 +353,17 @@ CGFloat OrignalOffset;
 //添加子控制器
 -(void)setupSubVcs{
     
-    
-    for (NSString * category in self.categorys) {
+    for (ZSCategory * zscategory in self.categorys) {
         
-        NSInteger idx = [self.categorys indexOfObject:category];
+        NSInteger idx = [self.categorys indexOfObject:zscategory];
+        
+        NSLog(@"%ld",idx);
         
         subViewController * subVc = [[subViewController alloc]init];
         
         [self.subVcs addObject:subVc];
         
-        subVc.category = category;
+        subVc.category = zscategory.title;
         
         subVc.tag = 1000+idx;
         
